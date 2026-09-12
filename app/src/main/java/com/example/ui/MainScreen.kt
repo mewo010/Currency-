@@ -4,9 +4,12 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CurrencyExchange
 import androidx.compose.material.icons.filled.FormatListBulleted
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
@@ -45,6 +49,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -61,8 +66,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.R
 import com.example.ui.components.AppUpdateDialog
 import com.example.ui.components.CurrencyPickerDialog
+import com.example.ui.components.TipOfTheDayDialog
 import com.example.ui.components.UpdateBanner
 import com.example.ui.screens.AllRatesScreen
+import com.example.ui.screens.AnimatedSplashScreen
 import com.example.ui.screens.ConverterScreen
 import com.example.ui.screens.FavoritesScreen
 import com.example.ui.screens.HistoryScreen
@@ -85,6 +92,8 @@ fun MainScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     var selectedTabItem by remember { mutableIntStateOf(0) }
+    var showSplash by remember { mutableStateOf(true) }
+    var showTipDialog by remember { mutableStateOf(false) }
     val tabs = listOf(NavTab.Converter, NavTab.Favorites, NavTab.AllRates, NavTab.History)
 
     // Handle Snackbar messages from ViewModel
@@ -119,8 +128,21 @@ fun MainScreen(
         }
     }
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
+    AnimatedContent(
+        targetState = showSplash,
+        transitionSpec = {
+            fadeIn(animationSpec = tween(400)) togetherWith fadeOut(animationSpec = tween(350))
+        },
+        label = "splashTransition"
+    ) { isSplash ->
+        if (isSplash) {
+            AnimatedSplashScreen(
+                isLoadingRates = uiState.isLoadingRates,
+                onSplashFinished = { showSplash = false }
+            )
+        } else {
+            Scaffold(
+                modifier = modifier.fillMaxSize(),
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -144,6 +166,16 @@ fun MainScreen(
                     }
                 },
                 actions = {
+                    IconButton(
+                        onClick = { showTipDialog = true },
+                        modifier = Modifier.testTag("top_bar_tip_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Lightbulb,
+                            contentDescription = "Tip of the Day",
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                    }
                     IconButton(
                         onClick = { viewModel.showUpdateDialog() },
                         modifier = Modifier.testTag("top_bar_update_button")
@@ -346,5 +378,13 @@ fun MainScreen(
                 }
             )
         }
+    }
+}
+}
+
+    if (showTipDialog) {
+        TipOfTheDayDialog(
+            onDismiss = { showTipDialog = false }
+        )
     }
 }

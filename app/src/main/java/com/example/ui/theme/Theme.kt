@@ -12,22 +12,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFFA0C9FF),
-    onPrimary = Color(0xFF00325F),
-    primaryContainer = Color(0xFF004887),
-    onPrimaryContainer = SleekBlueContainer,
-    secondary = Color(0xFFA0D49D),
-    onSecondary = Color(0xFF0B3910),
-    secondaryContainer = SleekGreenSecondary,
-    onSecondaryContainer = SleekGreenContainer,
-    tertiary = SleekGreenSecondary,
+    primary = Color(0xFF75A9F9),
+    onPrimary = Color(0xFF002B73),
+    primaryContainer = Color(0xFF0C3B88),
+    onPrimaryContainer = Color(0xFFD6E4FC),
+    secondary = SleekAmberAccent,
+    onSecondary = Color(0xFF452B00),
+    secondaryContainer = Color(0xFF5E3C00),
+    onSecondaryContainer = Color(0xFFFFDF9E),
+    tertiary = Color(0xFF4EE2A0),
+    onTertiary = Color(0xFF003822),
     background = SleekBackgroundDark,
     surface = SleekSurfaceDark,
     surfaceVariant = SleekSurfaceVariantDark,
     onBackground = SleekOnSurfaceDark,
     onSurface = SleekOnSurfaceDark,
     onSurfaceVariant = SleekOnSurfaceVariantDark,
-    outline = Color(0xFF44474E)
+    outline = SleekOutlineDark
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -35,11 +36,12 @@ private val LightColorScheme = lightColorScheme(
     onPrimary = SleekBlueOnPrimary,
     primaryContainer = SleekBlueContainer,
     onPrimaryContainer = SleekBlueOnContainer,
-    secondary = SleekGreenSecondary,
+    secondary = SleekAmberAccent,
     onSecondary = Color.White,
-    secondaryContainer = SleekGreenContainer,
-    onSecondaryContainer = SleekGreenOnContainer,
+    secondaryContainer = SleekAmberContainer,
+    onSecondaryContainer = Color(0xFF5E3C00),
     tertiary = SleekGreenSecondary,
+    onTertiary = Color.White,
     background = SleekBackgroundLight,
     surface = SleekSurfaceLight,
     surfaceVariant = SleekSurfaceVariantLight,

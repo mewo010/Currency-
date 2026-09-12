@@ -1,7 +1,14 @@
 package com.example.ui.screens
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -88,7 +95,10 @@ fun ConverterScreen(
     var rotationAngle by remember { mutableFloatStateOf(0f) }
     val animatedRotation by animateFloatAsState(
         targetValue = rotationAngle,
-        animationSpec = tween(durationMillis = 350),
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
         label = "swapRotation"
     )
 
@@ -451,16 +461,24 @@ fun ConverterScreen(
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f)
                 )
 
-                // Large Main Result Text
+                // Large Main Result Text with Smooth Number Transition
                 val formattedResult = String.format(Locale.US, "%,.2f", uiState.convertedAmount)
-                Text(
-                    text = "${uiState.toCurrency.symbol} $formattedResult ${uiState.toCurrency.code}",
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.ExtraBold
-                    ),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+                AnimatedContent(
+                    targetState = "${uiState.toCurrency.symbol} $formattedResult ${uiState.toCurrency.code}",
+                    transitionSpec = {
+                        fadeIn(tween(250)) + slideInVertically { it / 4 } togetherWith fadeOut(tween(150))
+                    },
+                    label = "convertedAmountAnimation"
+                ) { targetText ->
+                    Text(
+                        text = targetText,
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.ExtraBold
+                        ),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
