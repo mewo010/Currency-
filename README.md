@@ -31,19 +31,20 @@ The repository includes a single, unified GitHub Actions workflow located at `.g
    - Prepares the iOS package bundle (`GlobalCash-iOS-Universal.zip`) on `macos-latest`.
    - Uploads the iOS package as an artifact.
 4. **`create-release`**:
-   - Triggered when a version tag (e.g. `v1.0.0`) is pushed or when run manually via the GitHub **Actions** tab with "Publish build artifacts as a new GitHub Release" enabled.
-   - Gathers all compiled files from the parallel jobs, computes SHA256 verification checksums, and publishes a new release in the repository's **Releases** tab.
+   - Runs automatically on every push to `main`/`master`, on version tags, or on manual workflow dispatch.
+   - Gathers all compiled files from the parallel jobs, computes SHA256 verification checksums, and publishes a new release in the repository's **Releases** tab with all assets attached.
 
-### How to Create a Release
-- **Option 1 (Git Tag)**:
+### How Releases are Created
+- **Automatic on Push**: Every commit pushed to `main`/`master` automatically compiles all platforms and publishes a release (e.g. `v1.0.1`, `v1.0.2`, etc.) marked as latest.
+- **Git Tags**: Push a semantic version tag (e.g. `v1.0.0`) to generate a tagged milestone release:
   ```bash
   git tag v1.0.0
   git push origin v1.0.0
   ```
-- **Option 2 (GitHub Actions UI)**:
+- **Manual Trigger**:
   1. Navigate to the **Actions** tab in your GitHub repository.
   2. Select **Multi-Platform Build & Release**.
-  3. Click **Run workflow**, check the release option, specify your tag name (e.g., `v1.0.0`), and run.
+  3. Click **Run workflow**, optionally specify a tag name, and click Run.
 
 ---
 

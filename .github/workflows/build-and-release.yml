@@ -189,7 +189,7 @@ jobs:
     name: Publish GitHub Release
     needs: [build-android, build-windows, build-ios]
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && github.event.inputs.create_release == 'true')
+    if: github.event_name != 'pull_request' && (github.event_name != 'workflow_dispatch' || github.event.inputs.create_release != 'false')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -230,7 +230,7 @@ jobs:
           elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
             TAG="${GITHUB_REF#refs/tags/}"
           else
-            TAG="v1.0.0"
+            TAG="v1.0.${{ github.run_number }}"
           fi
 
           if [ -n "${{ github.event.inputs.release_title }}" ]; then
@@ -250,6 +250,7 @@ jobs:
           draft: false
           prerelease: false
           generate_release_notes: true
+          make_latest: true
           body: |
             ## GlobalCash Release ${{ steps.release_meta.outputs.tag }}
 
