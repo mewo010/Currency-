@@ -1,0 +1,6 @@
+{
+  "name": "GlobalCash",
+  "description": "Modern currency conversion app with real-time exchange rates, location-based local currency detection, and offline Room caching.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
