@@ -9,9 +9,11 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -23,6 +25,9 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.SystemUpdate
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -54,7 +59,9 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.R
+import com.example.ui.components.AppUpdateDialog
 import com.example.ui.components.CurrencyPickerDialog
+import com.example.ui.components.UpdateBanner
 import com.example.ui.screens.AllRatesScreen
 import com.example.ui.screens.ConverterScreen
 import com.example.ui.screens.FavoritesScreen
@@ -138,6 +145,31 @@ fun MainScreen(
                 },
                 actions = {
                     IconButton(
+                        onClick = { viewModel.showUpdateDialog() },
+                        modifier = Modifier.testTag("top_bar_update_button")
+                    ) {
+                        BadgedBox(
+                            badge = {
+                                if (uiState.updateAvailableRelease != null) {
+                                    Badge(
+                                        containerColor = MaterialTheme.colorScheme.error,
+                                        modifier = Modifier.size(8.dp)
+                                    )
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.SystemUpdate,
+                                contentDescription = "Check for Updates",
+                                tint = if (uiState.updateAvailableRelease != null) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                }
+                            )
+                        }
+                    }
+                    IconButton(
                         onClick = { triggerLocationDetection() },
                         modifier = Modifier.testTag("top_bar_location_button")
                     ) {
@@ -198,69 +230,121 @@ fun MainScreen(
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { innerPadding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            when (selectedTabItem) {
-                0 -> ConverterScreen(
-                    uiState = uiState,
-                    onAmountChange = { viewModel.onAmountInputChanged(it) },
-                    onQuickAmountSelect = { viewModel.onQuickAmountSelected(it) },
-                    onSwapCurrencies = { viewModel.onSwapCurrencies() },
-                    onDetectLocation = { triggerLocationDetection() },
-                    onToggleFavorite = { viewModel.toggleFavorite() },
-                    onOpenPicker = { viewModel.showPicker(it) },
-                    onSelectPair = { from, to -> viewModel.onSelectCurrencyPair(from, to) },
-                    onRefreshRates = { viewModel.loadExchangeRates(forceRefresh = true) }
-                )
-                1 -> FavoritesScreen(
-                    uiState = uiState,
-                    onSelectPair = { from, to ->
-                        viewModel.onSelectCurrencyPair(from, to)
-                        selectedTabItem = 0
-                    },
-                    onRemoveFavorite = { from, to -> viewModel.toggleFavorite() }
-                )
-                2 -> AllRatesScreen(
-                    uiState = uiState,
-                    onOpenPicker = { viewModel.showPicker(it) },
-                    onSelectTargetCurrency = { target ->
-                        viewModel.onToCurrencySelected(target)
-                        selectedTabItem = 0
-                    }
-                )
-                3 -> HistoryScreen(
-                    uiState = uiState,
-                    onSelectPair = { from, to ->
-                        viewModel.onSelectCurrencyPair(from, to)
-                        selectedTabItem = 0
-                    },
-                    onClearHistory = { viewModel.clearHistory() }
-                )
-            }
+            UpdateBanner(
+                visible = uiState.updateBannerVisible && uiState.updateAvailableRelease != null,
+                newVersionTag = uiState.updateAvailableRelease?.tagName ?: "",
+                onUpdateClick = { viewModel.showUpdateDialog() },
+                onDismissClick = { viewModel.dismissUpdateBanner() }
+            )
 
-            // Currency Picker Bottom Sheet
-            uiState.activePickerType?.let { pickerType ->
-                val title = if (pickerType == CurrencyPickerType.FROM) "Select Base Currency" else "Select Target Currency"
-                val selectedCurrency = if (pickerType == CurrencyPickerType.FROM) uiState.fromCurrency else uiState.toCurrency
-
-                CurrencyPickerDialog(
-                    title = title,
-                    selectedCurrency = selectedCurrency,
-                    searchQuery = uiState.pickerSearchQuery,
-                    onSearchQueryChange = { viewModel.updatePickerSearchQuery(it) },
-                    onCurrencySelected = { currency ->
-                        if (pickerType == CurrencyPickerType.FROM) {
-                            viewModel.onFromCurrencySelected(currency)
-                        } else {
-                            viewModel.onToCurrencySelected(currency)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                when (selectedTabItem) {
+                    0 -> ConverterScreen(
+                        uiState = uiState,
+                        onAmountChange = { viewModel.onAmountInputChanged(it) },
+                        onQuickAmountSelect = { viewModel.onQuickAmountSelected(it) },
+                        onSwapCurrencies = { viewModel.onSwapCurrencies() },
+                        onDetectLocation = { triggerLocationDetection() },
+                        onToggleFavorite = { viewModel.toggleFavorite() },
+                        onOpenPicker = { viewModel.showPicker(it) },
+                        onSelectPair = { from, to -> viewModel.onSelectCurrencyPair(from, to) },
+                        onRefreshRates = { viewModel.loadExchangeRates(forceRefresh = true) }
+                    )
+                    1 -> FavoritesScreen(
+                        uiState = uiState,
+                        onSelectPair = { from, to ->
+                            viewModel.onSelectCurrencyPair(from, to)
+                            selectedTabItem = 0
+                        },
+                        onRemoveFavorite = { from, to -> viewModel.toggleFavorite() }
+                    )
+                    2 -> AllRatesScreen(
+                        uiState = uiState,
+                        onOpenPicker = { viewModel.showPicker(it) },
+                        onSelectTargetCurrency = { target ->
+                            viewModel.onToCurrencySelected(target)
+                            selectedTabItem = 0
                         }
-                    },
-                    onDismiss = { viewModel.hidePicker() }
-                )
+                    )
+                    3 -> HistoryScreen(
+                        uiState = uiState,
+                        onSelectPair = { from, to ->
+                            viewModel.onSelectCurrencyPair(from, to)
+                            selectedTabItem = 0
+                        },
+                        onClearHistory = { viewModel.clearHistory() }
+                    )
+                }
+
+                // Currency Picker Bottom Sheet
+                uiState.activePickerType?.let { pickerType ->
+                    val title = if (pickerType == CurrencyPickerType.FROM) "Select Base Currency" else "Select Target Currency"
+                    val selectedCurrency = if (pickerType == CurrencyPickerType.FROM) uiState.fromCurrency else uiState.toCurrency
+
+                    CurrencyPickerDialog(
+                        title = title,
+                        selectedCurrency = selectedCurrency,
+                        searchQuery = uiState.pickerSearchQuery,
+                        onSearchQueryChange = { viewModel.updatePickerSearchQuery(it) },
+                        onCurrencySelected = { currency ->
+                            if (pickerType == CurrencyPickerType.FROM) {
+                                viewModel.onFromCurrencySelected(currency)
+                            } else {
+                                viewModel.onToCurrencySelected(currency)
+                            }
+                        },
+                        onDismiss = { viewModel.hidePicker() }
+                    )
+                }
             }
+        }
+
+        if (uiState.showUpdateDialog) {
+            val context = LocalContext.current
+            AppUpdateDialog(
+                uiState = uiState,
+                onDismiss = { viewModel.hideUpdateDialog() },
+                onCheckForUpdates = { owner, repo ->
+                    viewModel.checkForUpdates(silent = false, customOwner = owner, customRepo = repo)
+                },
+                onStartDownload = {
+                    viewModel.startDownloadAndInstall()
+                },
+                onInstallApk = { file ->
+                    viewModel.triggerInstall(file)
+                },
+                onOpenPermissionSettings = {
+                    viewModel.openInstallPermissionSettings()
+                    try {
+                        val intent = android.content.Intent(
+                            android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                            android.net.Uri.parse("package:${context.packageName}")
+                        ).apply {
+                            flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                        }
+                        context.startActivity(intent)
+                    } catch (_: Exception) {
+                        try {
+                            val intent = android.content.Intent(android.provider.Settings.ACTION_SECURITY_SETTINGS).apply {
+                                flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                            }
+                            context.startActivity(intent)
+                        } catch (_: Exception) {}
+                    }
+                },
+                onSaveRepository = { owner, repo ->
+                    viewModel.saveUpdateRepository(owner, repo)
+                }
+            )
         }
     }
 }

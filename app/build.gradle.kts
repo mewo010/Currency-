@@ -13,12 +13,19 @@ android {
   namespace = "com.example"
   compileSdk { version = release(36) { minorApiLevel = 1 } }
 
+  val appVersionName = (project.findProperty("versionName") as? String)
+    ?: System.getenv("APP_VERSION_NAME")
+    ?: "1.0.0"
+  val appVersionCode = ((project.findProperty("versionCode") as? String)?.toIntOrNull())
+    ?: System.getenv("APP_VERSION_CODE")?.toIntOrNull()
+    ?: 1
+
   defaultConfig {
     applicationId = "com.aistudio.globalcash.app"
     minSdk = 24
     targetSdk = 36
-    versionCode = 1
-    versionName = "1.0"
+    versionCode = appVersionCode
+    versionName = appVersionName
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

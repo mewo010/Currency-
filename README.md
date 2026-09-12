@@ -11,7 +11,22 @@ A modern currency converter Android application built with Kotlin and Jetpack Co
 - **Offline Mode & Room Caching**: Saves the most recent exchange rates locally so you can convert currencies anywhere, even without an internet connection.
 - **Favorites & Watchlist**: Pin your most frequently used currency pairs for one-tap access.
 - **Conversion History**: Keep track of previous calculations and exchange rate snapshots.
+- **In-App GitHub Auto-Updates**: Automatically checks for new releases on GitHub, downloads new APK packages directly with progress indicators, and triggers seamless in-app installation.
 - **Material Design 3**: Modern, responsive UI with smooth animations, dark mode support, and edge-to-edge layout.
+
+---
+
+## 🔄 In-App GitHub Auto-Updates
+
+GlobalCash now includes a built-in auto-update system that integrates directly with GitHub Releases:
+
+1. **Automatic Check on Startup**: When you open GlobalCash, the app checks the GitHub repository (`omriyosi/Currency-` by default) for newer release tags.
+2. **Update Notification Banner & Top Bar Badge**: If a new release has been published with an APK asset, an update banner appears along with a badge on the system update icon in the top bar.
+3. **One-Tap Download & Install**:
+   - Tap **Update** to open the App Updates dialog.
+   - Tap **Download & Install Update** to download the new APK with live progress tracking (percentage and MBs).
+   - Once downloaded, GlobalCash uses Android's `FileProvider` and system installer to install the update seamlessly.
+4. **Configurable Repository**: You can edit the target GitHub repository (Owner and Repo name) directly within the update dialog if you fork or mirror the project.
 
 ---
 
