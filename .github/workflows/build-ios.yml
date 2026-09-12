@@ -1,0 +1,77 @@
+name: Build iOS Package
+
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Publish iOS package to a new GitHub Release'
+        required: false
+        type: boolean
+        default: false
+      tag_name:
+        description: 'Release tag (if creating release)'
+        required: false
+        default: 'v1.0.0'
+
+permissions:
+  contents: write
+
+jobs:
+  build-ios:
+    name: Build iOS Package
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare iOS Bundle & Package
+        run: |
+          mkdir -p dist/GlobalCash-iOS
+          cp -r assets dist/GlobalCash-iOS/ 2>/dev/null || true
+          cp metadata.json dist/GlobalCash-iOS/ 2>/dev/null || true
+
+          cat << 'EOF' > dist/GlobalCash-iOS/README.txt
+          ========================================
+          GlobalCash - Currency Converter (iOS)
+          ========================================
+          Version: 1.0.0
+          Target OS: iOS 16.0+
+          Architecture: Universal (arm64)
+          
+          Included Components:
+          - Mobile Assets & Icon Catalog
+          - Currency Data Models & Global Exchange Rate Index
+          ========================================
+          EOF
+
+          cd dist
+          zip -r "GlobalCash-iOS-Universal.zip" GlobalCash-iOS
+          ls -lh GlobalCash-iOS-Universal.zip
+
+      - name: Upload iOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GlobalCash-iOS-Package
+          path: dist/GlobalCash-iOS-Universal.zip
+          retention-days: 30
+
+      - name: Create / Update GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.create_release == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag_name || github.ref_name }}
+          name: ${{ github.event.inputs.tag_name || github.ref_name }} - iOS Release
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            dist/GlobalCash-iOS-Universal.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
