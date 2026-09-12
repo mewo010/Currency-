@@ -75,8 +75,29 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Compute Build Version
+        id: build_meta
+        run: |
+          if [ -n "${{ github.event.inputs.tag_name }}" ]; then
+            TAG="${{ github.event.inputs.tag_name }}"
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          else
+            TAG="v1.0.${{ github.run_number }}"
+          fi
+          VERSION_NAME="${TAG#v}"
+          VERSION_NAME="${VERSION_NAME#V}"
+          VERSION_CODE="${{ github.run_number }}"
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          echo "version_name=${VERSION_NAME}" >> $GITHUB_OUTPUT
+          echo "version_code=${VERSION_CODE}" >> $GITHUB_OUTPUT
+          echo "Building GlobalCash with versionName=${VERSION_NAME} and versionCode=${VERSION_CODE}"
+
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace
+        env:
+          APP_VERSION_NAME: ${{ steps.build_meta.outputs.version_name }}
+          APP_VERSION_CODE: ${{ steps.build_meta.outputs.version_code }}
+        run: ./gradlew assembleDebug -PversionName="${{ steps.build_meta.outputs.version_name }}" -PversionCode="${{ steps.build_meta.outputs.version_code }}" --stacktrace
 
       - name: Stage Android Artifact
         run: |

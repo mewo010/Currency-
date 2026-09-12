@@ -3,10 +3,12 @@ package com.example.data.update
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import androidx.core.content.FileProvider
+import com.example.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -50,12 +52,21 @@ class AppUpdateManager(
         private const val PREFS_NAME = "global_cash_update_prefs"
         private const val KEY_REPO_OWNER = "repo_owner"
         private const val KEY_REPO_NAME = "repo_name"
-        const val DEFAULT_REPO_OWNER = "omriyosi"
+        const val DEFAULT_REPO_OWNER = "mewo010"
         const val DEFAULT_REPO_NAME = "Currency-"
     }
 
     fun getStoredRepository(): Pair<String, String> {
-        val owner = prefs.getString(KEY_REPO_OWNER, null) ?: DEFAULT_REPO_OWNER
+        val storedOwner = prefs.getString(KEY_REPO_OWNER, null)
+        // Auto-migrate old default omriyosi to new owner mewo010
+        val owner = if (storedOwner == null || storedOwner.equals("omriyosi", ignoreCase = true)) {
+            if (storedOwner != null && storedOwner.equals("omriyosi", ignoreCase = true)) {
+                prefs.edit().putString(KEY_REPO_OWNER, DEFAULT_REPO_OWNER).apply()
+            }
+            DEFAULT_REPO_OWNER
+        } else {
+            storedOwner
+        }
         val repo = prefs.getString(KEY_REPO_NAME, null) ?: DEFAULT_REPO_NAME
         return Pair(owner, repo)
     }
@@ -69,10 +80,18 @@ class AppUpdateManager(
 
     fun getCurrentVersionName(): String {
         return try {
-            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-            packageInfo.versionName ?: "1.0.0"
+            val packageInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                context.packageManager.getPackageInfo(
+                    context.packageName,
+                    PackageManager.PackageInfoFlags.of(0)
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                context.packageManager.getPackageInfo(context.packageName, 0)
+            }
+            packageInfo.versionName ?: BuildConfig.VERSION_NAME
         } catch (_: Exception) {
-            "1.0.0"
+            BuildConfig.VERSION_NAME
         }
     }
 
@@ -204,21 +223,30 @@ class AppUpdateManager(
         context.startActivity(installIntent)
     }
 
-    fun isNewerVersion(current: String, remote: String): Boolean {
-        val cleanCurrent = current.removePrefix("v").removePrefix("V").trim()
-        val cleanRemote = remote.removePrefix("v").removePrefix("V").trim()
+    fun extractVersionNumbers(versionStr: String): List<Int> {
+        val clean = versionStr
+            .trim()
+            .removePrefix("refs/tags/")
+            .removePrefix("v")
+            .removePrefix("V")
+            .removePrefix("release-")
+            .removePrefix("Release-")
+            .trim()
 
-        if (cleanCurrent.equals(cleanRemote, ignoreCase = true)) {
+        val regex = Regex("\\d+")
+        return regex.findAll(clean).mapNotNull { it.value.toIntOrNull() }.toList()
+    }
+
+    fun isNewerVersion(current: String, remote: String): Boolean {
+        val currentParts = extractVersionNumbers(current)
+        val remoteParts = extractVersionNumbers(remote)
+
+        // If either version has no extractable numbers, do NOT report an update to avoid false positives
+        if (currentParts.isEmpty() || remoteParts.isEmpty()) {
             return false
         }
 
-        val currentParts = cleanCurrent.split(".", "-", "_").mapNotNull { it.toIntOrNull() }
-        val remoteParts = cleanRemote.split(".", "-", "_").mapNotNull { it.toIntOrNull() }
-
-        if (currentParts.isEmpty() || remoteParts.isEmpty()) {
-            return !cleanCurrent.equals(cleanRemote, ignoreCase = true)
-        }
-
+        // Compare each numeric component (major, minor, patch, build)
         val maxLength = maxOf(currentParts.size, remoteParts.size)
         for (i in 0 until maxLength) {
             val currNum = currentParts.getOrElse(i) { 0 }

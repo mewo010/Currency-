@@ -41,10 +41,14 @@ class AppUpdateManagerTest {
         assertFalse(updateManager.isNewerVersion(current = "1.0.0", remote = "1.0.0"))
         assertFalse(updateManager.isNewerVersion(current = "v1.0.0", remote = "1.0.0"))
         assertFalse(updateManager.isNewerVersion(current = "1.0.0", remote = "v1.0.0"))
+        assertFalse(updateManager.isNewerVersion(current = "1.0.1", remote = "v1.0.1"))
+        assertFalse(updateManager.isNewerVersion(current = "v1.0.1", remote = "v1.0.1"))
+        assertFalse(updateManager.isNewerVersion(current = "1.0.2", remote = "1.0.2"))
 
         // Older versions
         assertFalse(updateManager.isNewerVersion(current = "1.0.1", remote = "1.0.0"))
         assertFalse(updateManager.isNewerVersion(current = "2.0.0", remote = "1.9.9"))
+        assertFalse(updateManager.isNewerVersion(current = "1.0.2", remote = "v1.0.1"))
     }
 
     @Test
@@ -78,7 +82,7 @@ class AppUpdateManagerTest {
             tagName = "v1.0.1",
             name = "GlobalCash v1.0.1",
             body = "Bug fixes and improvements",
-            htmlUrl = "https://github.com/omriyosi/Currency-/releases/tag/v1.0.1",
+            htmlUrl = "https://github.com/mewo010/Currency-/releases/tag/v1.0.1",
             assets = assets
         )
 
@@ -95,7 +99,7 @@ class AppUpdateManagerTest {
             tagName = "v1.0.2",
             name = "GlobalCash v1.0.2",
             body = "No android apk yet",
-            htmlUrl = "https://github.com/omriyosi/Currency-/releases/tag/v1.0.2",
+            htmlUrl = "https://github.com/mewo010/Currency-/releases/tag/v1.0.2",
             assets = emptyList()
         )
 
@@ -106,7 +110,7 @@ class AppUpdateManagerTest {
     @Test
     fun `test default repository configuration`() {
         val (owner, repo) = updateManager.getStoredRepository()
-        assertEquals("omriyosi", owner)
+        assertEquals("mewo010", owner)
         assertEquals("Currency-", repo)
 
         updateManager.saveRepository("custom-user", "custom-repo")

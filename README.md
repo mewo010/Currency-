@@ -20,7 +20,7 @@ A modern currency converter Android application built with Kotlin and Jetpack Co
 
 GlobalCash now includes a built-in auto-update system that integrates directly with GitHub Releases:
 
-1. **Automatic Check on Startup**: When you open GlobalCash, the app checks the GitHub repository (`omriyosi/Currency-` by default) for newer release tags.
+1. **Automatic Check on Startup**: When you open GlobalCash, the app checks the GitHub repository (`mewo010/Currency-` by default) for newer release tags.
 2. **Update Notification Banner & Top Bar Badge**: If a new release has been published with an APK asset, an update banner appears along with a badge on the system update icon in the top bar.
 3. **One-Tap Download & Install**:
    - Tap **Update** to open the App Updates dialog.

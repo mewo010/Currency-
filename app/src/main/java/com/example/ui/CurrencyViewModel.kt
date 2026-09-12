@@ -56,7 +56,7 @@ data class CurrencyUiState(
     val updateAvailableRelease: GitHubRelease? = null,
     val updateAvailableAsset: GitHubReleaseAsset? = null,
     val currentAppVersion: String = "1.0.0",
-    val updateRepoOwner: String = "omriyosi",
+    val updateRepoOwner: String = "mewo010",
     val updateRepoName: String = "Currency-",
     val updateBannerVisible: Boolean = false,
     val updateErrorMessage: String? = null,
@@ -319,7 +319,8 @@ class CurrencyViewModel(
                             updateAvailableRelease = result.latestRelease,
                             updateAvailableAsset = result.apkAsset,
                             updateBannerVisible = true,
-                            currentAppVersion = result.currentVersion
+                            currentAppVersion = result.currentVersion,
+                            snackbarMessage = "New version ${result.latestRelease.tagName} available! Tap 'Update' to install."
                         )
                     }
                 }
